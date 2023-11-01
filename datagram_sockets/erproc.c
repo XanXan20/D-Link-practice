@@ -59,8 +59,3 @@ void Inet_pton(int af, const char *src, void *dst){
         exit(EXIT_FAILURE);
     }
 }
-
-void Sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen){
-    int res = sendto(sockfd, buf, len, flags, dest_addr, addrlen);
-	printf("ret = %d \n", res);
-}

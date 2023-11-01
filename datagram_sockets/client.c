@@ -7,16 +7,17 @@ int main(){
 
     int sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
 
-    struct sockaddr_in sock_addr = {0};
-        sock_addr.sin_family = AF_INET;
-        sock_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-        sock_addr.sin_port = htons(50000);
+    struct sockaddr_in dest_addr = {0};
+        dest_addr.sin_family = AF_INET;
+        dest_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+        dest_addr.sin_port = htons(50000);
 
     char buf[] = {"hello, world!"};
 
     int count = 5;
     while(count--){
-        Sendto(sockfd, buf, sizeof(buf), 0, (struct sockaddr *) &sock_addr, sizeof(sock_addr)); 
+        int res = sendto(sockfd, buf, sizeof(buf), 0, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
+	    printf("ret = %d \n", res);
 
         sleep(1);
     }
