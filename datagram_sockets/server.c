@@ -1,5 +1,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include "erproc.h"
 
 int main(){
@@ -24,5 +25,7 @@ int main(){
         printf("[recv from %s:%d]%s \n",inet_ntoa(*(struct in_addr*)&recv_addr.sin_addr.s_addr),ntohs(recv_addr.sin_port),recvbuf);
     }
     
+    close(sockfd);
+
     return 0;
 }
