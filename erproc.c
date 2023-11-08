@@ -68,6 +68,15 @@ void Recv(int sockfd, void *buf, size_t len, int flags){
     }
 }
 
+int Recvfrom(int sockfd, void * buf, size_t len, int flags, struct sockaddr * src_addr, socklen_t * addrlen){
+    int res = recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
+    if(res == -1){
+        perror("recvfrom failed");
+        exit(EXIT_FAILURE);
+    }
+    return res;
+}
+
 void Send(int sockfd, const void *buf, size_t len, int flags){
     int res = send(sockfd, buf, len, flags);
     if(res == -1){

@@ -20,6 +20,8 @@ void Inet_pton(int af, const char *src, void *dst);
 
 void Recv(int sockfd, void *buf, size_t len, int flags);
 
+int Recvfrom(int sockfd, void * buf, size_t len, int flags, struct sockaddr * src_addr, socklen_t * addrlen);
+
 void Send(int sockfd, const void *buf, size_t len, int flags);
 
 #endif

@@ -1,7 +1,7 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "erproc.h"
+#include "../erproc.h"
 
 int main(){
 
@@ -9,7 +9,7 @@ int main(){
 
     struct sockaddr_in sock_addr = {0};
         sock_addr.sin_family = AF_INET;
-        sock_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+        sock_addr.sin_addr.s_addr = inet_addr("45.8.96.251");
         sock_addr.sin_port = htons(50000);
 
     Connect(sockfd, (struct sockaddr *) &sock_addr, sizeof(sock_addr));

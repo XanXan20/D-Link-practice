@@ -1,7 +1,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "erproc.h"
+#include "../erproc.h"
 
 int main(){
 
@@ -9,8 +9,8 @@ int main(){
 
     struct sockaddr_in dest_addr = {0};
         dest_addr.sin_family = AF_INET;
-        dest_addr.sin_addr.s_addr = inet_addr("192.168.162.101");
-        dest_addr.sin_port = htons(65535);
+        dest_addr.sin_addr.s_addr = INADDR_ANY;
+        dest_addr.sin_port = htons(50000);
 
     char buf[] = {"hello, world!"};
 
