@@ -20,89 +20,77 @@ void print_payload(unsigned char *payload){
     size_t str_len = strlen((char *)payload);
     size_t i = 0;
     while(i < str_len){
-        printf("%c", payload[i]);
+        if(payload[i] > 31 && payload[i] < 127)
+            printf("%c", payload[i]);
         i++;
     }
     printf("\n");
 }
 
-int print_eth_header(unsigned char *buf){
-    struct ethhdr *ethh = (struct ethhdr *)buf;
-    if(ethh->h_proto != ETH_P_IP) return 1;
-    return 0;
+void print_http(unsigned char *payload){
+    printf("------------HTTP HEADER------------\n");
+    print_payload(payload);
+    printf("-----------------------------------\n");
 }
 
-int print_iphdr(unsigned char *buf){
-    struct iphdr *iph = (struct iphdr *)(buf + sizeof(struct ethhdr));
-    
-    unsigned char *sip = (unsigned char *)malloc(100);
-    unsigned char *dip = (unsigned char *)malloc(100);
-    inet_ntop(AF_INET, &iph->saddr, (char *)sip, 100);
-    inet_ntop(AF_INET, &iph->daddr, (char *)dip, 100);
+void print_dns(unsigned char *data){
+    printf("-------------DNS HEADER------------\n");
+    print_payload(data);
+    printf("-----------------------------------\n");
+}
+
+void print_iphdr(struct iphdr iph){
+    char *sip = (char *)malloc(16);
+    char *dip = (char *)malloc(16);
+    inet_ntop(AF_INET, &iph.saddr, (char *)sip, 16);
+    inet_ntop(AF_INET, &iph.daddr, (char *)dip, 16);
 
     printf("-------------IP HEADER-------------\n");
-    printf("IP header length    : %u\n", iph->ihl);
-    printf("IP version          : %u\n", iph->version);
-    printf("Type of service     : %u\n", iph->tos);
-    printf("Total length        : %u\n", iph->tot_len);
-    printf("Package ID          : %u\n", iph->id);
-    printf("Time to life        : %u\n", iph->ttl);
-    printf("Protocol            : %u\n", iph->protocol);
-    printf("Check sum           : %u\n", iph->check);
+    printf("IP header length    : %u\n", iph.ihl);
+    printf("IP version          : %u\n", iph.version);
+    printf("Type of service     : %u\n", iph.tos);
+    printf("Total length        : %u\n", iph.tot_len);
+    printf("Package ID          : %u\n", iph.id);
+    printf("Time to life        : %u\n", iph.ttl);
+    printf("Protocol            : %u\n", iph.protocol);
+    printf("Check sum           : %u\n", iph.check);
     printf("Send address        : %s\n", sip);
     printf("Destination address : %s\n", dip);
-    return iph->protocol;
 }
 
-void print_tcphdr(unsigned char *buf){
-    struct tcphdr *tcph = (struct tcphdr*)(buf + sizeof(struct ethhdr) + sizeof(struct iphdr));
+void print_tcphdr(struct tcphdr tcph){
     printf("------------TCP HEADER-------------\n");
-    printf("Source port         :%u\n", ntohs(tcph->source));
-    printf("Detsination port    :%u\n", ntohs(tcph->dest));
-    printf("Sequence            :%u\n", tcph->seq);
-    printf("Acknowledgment      :%u\n", tcph->ack_seq);
-    printf("Header length       :%u\n", tcph->doff);
-    printf("Window size         :%u\n", tcph->window);
-    printf("Check sum           :%u\n", tcph->check);
-    printf("-----------------------------------\n");
-    
-    unsigned char *payload = buf + sizeof(struct ethhdr) + sizeof(struct iphdr) + sizeof(struct tcphdr);
-    if(ntohs(tcph->source) == HTTP_PORT || ntohs(tcph->dest) == HTTP_PORT){
-        print_payload(payload);
-        exit(EXIT_FAILURE);
-    }
-    
-    printf("\n");
-    
+    printf("Source port         :%u\n", ntohs(tcph.source));
+    printf("Detsination port    :%u\n", ntohs(tcph.dest));
+    printf("Sequence            :%u\n", tcph.seq);
+    printf("Acknowledgment      :%u\n", tcph.ack_seq);
+    printf("Header length       :%u\n", tcph.doff);
+    printf("Window size         :%u\n", tcph.window);
+    printf("Check sum           :%u\n", tcph.check);
+    printf("-----------------------------------\n");    
 }
 
-void print_udphdr(unsigned char *buf){
-    struct udphdr *udph = (struct udphdr*)(buf + sizeof(struct ethhdr) + sizeof(struct iphdr)); 
-    
+void print_udphdr(struct udphdr udph){    
     printf("------------UDP HEADER-------------\n");
-    printf("Source port         :%u\n", ntohs(udph->source));
-    printf("Detsination port    :%u\n", ntohs(udph->dest));
-    printf("Length              :%u\n", udph->len);
-    printf("Check sum           :%u\n", udph->check);
+    printf("Source port         :%u\n", ntohs(udph.source));
+    printf("Detsination port    :%u\n", ntohs(udph.dest));
+    printf("Length              :%u\n", udph.len);
+    printf("Check sum           :%u\n", udph.check);
     printf("-----------------------------------\n");
-
 }
 
-void print_icmphdr(unsigned char *buf){
-    struct icmphdr *icmph = (struct icmphdr*)(buf + sizeof(struct ethhdr) + sizeof(struct iphdr)); 
-
+void print_icmphdr(struct icmphdr icmph){
     printf("------------ICMP HEADER------------\n");
-    printf("Type                : %u\n", icmph->type);
-    printf("Code                : %u\n", icmph->code);
-    printf("Checksum            : %u\n", icmph->checksum);
-    printf("Un id echo id       : %u\n", icmph->un.echo.id);
-    printf("Un id echo sequence : %u\n", icmph->un.echo.sequence);
-    printf("Un gateway          : %u\n", icmph->un.gateway);
-    printf("Un frag _unused     : %u\n", icmph->un.frag.__unused);
-    printf("Un frag mtu         : %u\n", icmph->un.frag.mtu);
-    printf("Un reserved         : %hhn\n", icmph->un.reserved);
+    printf("Type                : %u\n", icmph.type);
+    printf("Code                : %u\n", icmph.code);
+    printf("Checksum            : %u\n", icmph.checksum);
+    printf("Un id echo id       : %u\n", icmph.un.echo.id);
+    printf("Un id echo sequence : %u\n", icmph.un.echo.sequence);
+    printf("Un gateway          : %u\n", icmph.un.gateway);
+    printf("Un frag _unused     : %u\n", icmph.un.frag.__unused);
+    printf("Un frag mtu         : %u\n", icmph.un.frag.mtu);
+    printf("Un reserved         : %hhn\n", icmph.un.reserved);
     printf("-----------------------------------\n");
-    
 }
 
 int main(){
@@ -124,18 +112,37 @@ int main(){
             return 1;
         }    
         
-        if(!print_eth_header(buf)) continue;
+        struct ethhdr *ethh = (struct ethhdr *)buf;
+        if(ethh->h_proto == ETH_P_IP) continue;
         
-        int protocol = print_iphdr(buf);
-        switch(protocol){
+        struct iphdr *iph = (struct iphdr *)(buf + sizeof(struct ethhdr));
+        print_iphdr(*iph);
+
+        switch(iph->protocol){
             case IPPROTO_TCP:
-                print_tcphdr(buf);
+                struct tcphdr *tcph = (struct tcphdr*)(buf + sizeof(struct ethhdr) + (iph->ihl*4));
+                print_tcphdr(*tcph);
+                
+                unsigned char *payload = (unsigned char *)(buf + sizeof(struct ethhdr) + (iph->ihl*4) + (tcph->doff*4));
+                
+                if(ntohs(tcph->source) == HTTP_PORT){
+                    print_http(payload);
+                    exit(EXIT_FAILURE);
+                }
+                else if(ntohs(tcph->source == DNS_PORT || ntohs(tcph->dest) == DNS_PORT)){
+                    print_dns(payload);
+                    //exit(EXIT_FAILURE);
+                }
                 break;
+
             case IPPROTO_UDP:
-                print_udphdr(buf);
+                struct udphdr *udph = (struct udphdr*)(buf + sizeof(struct ethhdr) + sizeof(struct udphdr)); 
+                print_udphdr(*udph);
                 break;
+
             case IPPROTO_ICMP:
-                print_icmphdr(buf);
+                struct icmphdr *icmph = (struct icmphdr*)(buf + sizeof(struct ethhdr) + sizeof(struct iphdr)); 
+                print_icmphdr(*icmph);
                 return 1;
                 break;
         }
