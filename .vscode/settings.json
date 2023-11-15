@@ -7,5 +7,5 @@
         "ip_icmp.h": "c",
         "if_ether.h": "c"
     },
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "enabled"
 }
