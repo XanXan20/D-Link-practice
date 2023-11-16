@@ -16,24 +16,22 @@
 #define DNS_PORT 53
 #define BUF_LEN 65536
 
-void print_payload(unsigned char *payload, int payloadlen, int payloadoff){
-    printf("Offset: %d\n", payloadoff);
-    printf("Length: %d\n", payloadlen);
-    for (int i = payloadoff; i < payloadlen; i++) {
+void print_payload(unsigned char *payload, int payloadlen){
+    for (int i = 0; i < payloadlen; i++) {
         printf("%c", payload[i]);
     }
     printf("\n");
 }
 
-void print_http(unsigned char *payload, int payloadlen, int payloadoff){
+void print_http(unsigned char *payload, int payloadlen){
     printf("------------HTTP HEADER------------\n");
-    print_payload(payload, payloadlen, payloadoff);
-    printf("-----------------------------------\n");
+    print_payload(payload, payloadlen);
+    printf("-----------------------------------\n\n");
 }
 
-void print_dns(unsigned char *data, int payloadlen, int payloadoff){
+void print_dns(unsigned char *data, int payloadlen){
     printf("-------------DNS HEADER------------\n");
-    print_payload(data, payloadlen, payloadoff);
+    print_payload(data, payloadlen);
     printf("-----------------------------------\n");
 }
 
@@ -108,7 +106,7 @@ int main(){
 
     while(1){
         int rcvlen = recv(sockfd, packet, BUF_LEN, 0);
-        if(rcvlen == -1){
+        if(rcvlen == -1 || rcvlen == 0){
             perror("recv failed");
             return 1;
         }    
@@ -123,30 +121,39 @@ int main(){
 
         switch(iph->protocol){
             case IPPROTO_TCP:
-                int tcphdr_offset = iphdr_offset + iph->ihl*4;
+                int tcphdr_offset = iphdr_offset + (iph->ihl)*4;
                 struct tcphdr *tcph = (struct tcphdr*)(packet + tcphdr_offset);
                 //print_tcphdr(tcph);
                 
 
-                int payload_offset = tcphdr_offset + tcph->doff*4;
-                int payload_length = rcvlen - payload_offset;
-                unsigned char *payload = (unsigned char *)(packet + payload_offset);
+                int tcp_payload_offset = tcphdr_offset + (tcph->doff)*4;
+                int tcp_payload_length = rcvlen - tcp_payload_offset;
+                unsigned char *tcp_payload = (unsigned char *)(packet + tcp_payload_offset);
                 
                 if(ntohs(tcph->dest) == HTTP_PORT || ntohs(tcph->source) == HTTP_PORT){
-                    printf("rcvlen: %d\n", rcvlen);
-                    print_http(payload, payload_length, payload_offset);
-                    //exit(EXIT_FAILURE);
+                    if(tcp_payload_length > 0){
+                        print_ethhdr(ethh);
+                        print_iphdr(iph);
+                        print_tcphdr(tcph);
+                        print_http(tcp_payload, tcp_payload_length);
+                    }                         
                 }
                 else if(ntohs(tcph->source == DNS_PORT || ntohs(tcph->dest) == DNS_PORT)){
-                    print_dns(payload, payload_length, payload_offset);
-                    //exit(EXIT_FAILURE);
+                    print_dns(tcp_payload, tcp_payload_length);
                 }
                 break;
 
             case IPPROTO_UDP:
-                //struct udphdr *udph = (struct udphdr*)(packet + sizeof(struct ethhdr) + sizeof(struct udphdr)); 
-                //print_udphdr(udph);
-                break;
+                int udphdr_offset = iphdr_offset + (iph->ihl)*4;
+                struct udphdr *udph = (struct udphdr*)(packet + udphdr_offset);
+
+                int udp_payload_offset = udphdr_offset + sizeof(struct udphdr);
+                int udp_payload_length = rcvlen - udp_payload_offset;
+                unsigned char *udp_payload = (unsigned char *)(packet + udp_payload_offset);  
+
+                if(ntohs(udph->source == DNS_PORT || ntohs(udph->dest) == DNS_PORT)){
+                    print_dns(udp_payload, udp_payload_length);
+                }
 
             case IPPROTO_ICMP:
                 //struct icmphdr *icmph = (struct icmphdr*)(packet + sizeof(struct ethhdr) + sizeof(struct iphdr)); 
