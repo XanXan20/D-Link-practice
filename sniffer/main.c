@@ -28,7 +28,7 @@ int main() {
             return 1;
         }
 
-         if(rcvlen <= (long)sizeof(struct ethhdr)) {
+        if(rcvlen <= (long)sizeof(struct ethhdr)) {
             printf("ETHERNET DATA NONEXIST\n");
             continue;
         }
